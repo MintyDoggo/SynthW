@@ -7,8 +7,8 @@ CoordMode, Mouse, Screen
 ; Constants
 kNone := 0x0
 kShift := 0x4
-deltaXRatio := 0.0535   ;magic ratio number for horizontal scroll speed
-deltaYRatio := 0.34275  ;magic ratio number for vertical scroll speed
+deltaXRatio := 0.0535   ; magic ratio number for horizontal scroll speed (maybe need to adjust these two later)
+deltaYRatio := 0.34275  ; magic ratio number for vertical scroll speed
 
 ; Setups
 Init:
@@ -19,6 +19,8 @@ Init:
     RegRead, sensX, HKEY_CURRENT_USER\Software\Synth W, sensX
     RegRead, sensY, HKEY_CURRENT_USER\Software\Synth W, sensY
     RegRead, runOnStartup, HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run, Synth W
+    Gui, Add, Checkbox, vGuiTransposeNotes, Transpose Notes With Arrows
+    GuiControl,,GuiTransposeNotess, %transposeNotes%
 
     ; Default Values
     If (sensX = "")
@@ -41,6 +43,11 @@ Init:
         Menu Tray, Check, Run on startup
         RegWrite, REG_SZ, HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run, Synth W, %A_ScriptFullPath%
     }
+
+    If (transposeNotes = "")
+    {
+        transposeNotes := false
+    }
 return
 
 RunOnStartup:
@@ -61,24 +68,28 @@ return
 ; Settings Menu
 Settings:
     Gui New, -Resize, Settings
-    Gui Show, W250 H150
+    Gui Show, W300 H200
     Gui, Add, Text,, Sensitivity X:
     Gui, Add, Edit, vGuiSensXEdit
     Gui, Add, UpDown, vGuiSensX Range1-50, %sensX%
     Gui, Add, Text,, Sensitivity Y:
     Gui, Add, Edit, vGuiSensYEdit
     Gui, Add, UpDown, vGuiSensY Range1-50, %sensY%
+    Gui, Add, Checkbox, vGuiTransposeNotes, Transpose Notes With Arrows
+    GuiControl,,GuiTransposeNotes, %transposeNotes%
     Gui, Add, Button, Default, OK
 return
 
 ButtonOK:
     GuiControlGet, sensX,, GuiSensX
     GuiControlGet, sensY,, GuiSensY
+    GuiControlGet, transposeNotes,, GuiTransposeNotes
 
     Gui Hide
 
     RegWrite, REG_DWORD, HKEY_CURRENT_USER\Software\Synth W, sensX, %sensX%
     RegWrite, REG_DWORD, HKEY_CURRENT_USER\Software\Synth W, sensY, %sensY%
+    RegWrite, REG_DWORD, HKEY_CURRENT_USER\Software\Synth W, TransposeNotes, %transposeNotes%
 return
 
 CheckWin()
@@ -103,6 +114,33 @@ return
 
 MButton Up::
     SetTimer Timer, Off
+return
+
+; move note up semitone
+#If CheckWin() and transposeNotes
+Up::
+    Send ^{t}
+    Send {Tab}
+    Send {Tab}
+    Send {Tab}
+    Send {Tab}
+    Send {Tab}
+    Send {1}
+    Send {Enter}
+return
+
+; move note down semitone
+#If CheckWin() and transposeNotes
+Down::
+    Send ^{t}
+    Send {Tab}
+    Send {Tab}
+    Send {Tab}
+    Send {Tab}
+    Send {Tab}
+    Send {-}
+    Send {1}
+    Send {Enter}
 return
 
 PostMWX(hWnd, delta, modifiers, x, y) 
