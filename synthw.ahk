@@ -68,7 +68,7 @@ return
 ; Settings Menu
 Settings:
     Gui New, -Resize, Settings
-    Gui Show, W300 H200
+    Gui Show, W220 H150
     Gui, Add, Text,, Sensitivity X:
     Gui, Add, Edit, vGuiSensXEdit
     Gui, Add, UpDown, vGuiSensX Range1-50, %sensX%
